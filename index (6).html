@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Onet Master Deluxe</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Fredoka', cursive, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #7cd137 0%, #30801e 60%, #17480e 100%);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Glossy tropical game buttons */
+        .btn-green {
+            background: linear-gradient(180deg, #7ee633 0%, #3ca809 100%);
+            border-bottom: 4px solid #206103;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.7);
+        }
+        .btn-green:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .btn-orange {
+            background: linear-gradient(180deg, #ffc833 0%, #ff7d00 100%);
+            border-bottom: 4px solid #a34800;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.8);
+        }
+        .btn-orange:active {
+            transform: translateY(2px);
+            border-bottom-width: 2px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .btn-yellow {
+            background: linear-gradient(180deg, #ffea47 0%, #e6a800 100%);
+            border-bottom: 4px solid #8f6800;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3), inset 0 2px 3px rgba(255,255,255,0.8);
+        }
+
+        /* Tile graphics */
+        .tile-card {
+            background: linear-gradient(145deg, #ffffff 0%, #e1e9f0 100%);
+            border: 2px solid #b3c6d4;
+            box-shadow: 0 4px 0 #8ba1b3, 0 6px 8px rgba(0,0,0,0.25);
+            transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
+        }
+
+        .tile-card:hover {
+            transform: scale(1.05);
+        }
+
+        .tile-card.selected {
+            transform: scale(1.12);
+            border: 3px solid #facc15;
+            background: linear-gradient(145deg, #fffbeb 0%, #fef08a 100%);
+            box-shadow: 0 0 15px #facc15, 0 6px 0 #ca8a04;
+            z-index: 20;
+        }
+
+        .tile-card.frozen {
+            background: linear-gradient(145deg, #e0f2fe 0%, #bae6fd 100%);
+            border: 2px solid #38bdf8;
+            box-shadow: 0 4px 0 #0284c7, 0 0 10px rgba(56, 189, 248, 0.6);
+        }
+
+        .tile-card.rock {
+            background: linear-gradient(145deg, #64748b 0%, #334155 100%);
+            border: 2px solid #475569;
+            box-shadow: 0 4px 0 #1e293b;
+        }
+
+        .tile-card.hint-glow {
+            animation: pulse-glow 0.8s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 0 5px #3b82f6; }
+            100% { transform: scale(1.12); box-shadow: 0 0 22px #3b82f6, 0 0 35px #60a5fa; }
+        }
+
+        /* Floating combo banner animation */
+        @keyframes combo-popup {
+            0% { transform: scale(0.5) translateY(0); opacity: 0; }
+            50% { transform: scale(1.3) translateY(-15px); opacity: 1; }
+            100% { transform: scale(1) translateY(-30px); opacity: 0; }
+        }
+
+        .combo-text {
+            animation: combo-popup 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center relative select-none">
+
+    <!-- Leaf Decor Corner Graphics -->
+    <div class="fixed top-0 left-0 p-3 pointer-events-none opacity-50 md:opacity-80">
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="#17480e">
+            <path d="M0,0 Q50,20 100,0 Q80,50 100,100 Q50,80 0,100 Q20,50 0,0 Z"/>
+        </svg>
+    </div>
+    <div class="fixed top-0 right-0 p-3 pointer-events-none opacity-50 md:opacity-80 transform rotate-90">
+        <svg width="100" height="100" viewBox="0 0 100 100" fill="#17480e">
+            <path d="M0,0 Q50,20 100,0 Q80,50 100,100 Q50,80 0,100 Q20,50 0,0 Z"/>
+        </svg>
+    </div>
+
+    <!-- MAIN MENU SCREEN -->
+    <div id="mainMenu" class="flex flex-col items-center justify-center w-full max-w-md bg-emerald-950/60 backdrop-blur-md p-6 md:p-8 rounded-3xl border-4 border-emerald-500/50 shadow-2xl z-20 mx-4">
+        <div class="text-center mb-6">
+            <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 via-yellow-400 to-amber-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-wider">
+                ONET
+            </h1>
+            <h2 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-200 via-teal-300 to-teal-600 drop-shadow-[0_4px_6px_rgba(0,0,0,0.8)] tracking-widest -mt-2">
+                MASTER
+            </h2>
+        </div>
+
+        <div class="flex gap-3 mb-6">
+            <button id="btnHowToPlay" class="btn-orange px-5 py-2.5 rounded-full text-white font-black text-sm uppercase tracking-wide flex items-center gap-1.5">
+                ❓ Rules
+            </button>
+            <button id="btnSoundToggle" class="btn-orange p-2.5 rounded-full text-white font-black text-xl flex items-center justify-center w-11 h-11">
+                🔊
+            </button>
+        </div>
+
+        <!-- Level Selector Container -->
+        <div class="w-full bg-emerald-950/80 p-4 rounded-2xl border-2 border-emerald-600/50">
+            <div class="text-center font-bold text-emerald-200 mb-3 uppercase tracking-wider text-xs md:text-sm">Select Level Theme</div>
+            <div id="levelGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-60 overflow-y-auto p-1">
+                <!-- Level Buttons populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- GAMEPLAY SCREEN -->
+    <div id="gameScreen" class="hidden flex-col items-center justify-between w-full max-w-5xl h-full max-h-[96vh] p-2 md:p-4 z-10 relative">
+        
+        <!-- Header Controls Bar -->
+        <div class="w-full flex items-center justify-between bg-emerald-950/80 backdrop-blur-md px-3 py-2 rounded-2xl border-2 border-emerald-500/60 shadow-xl gap-2">
+            
+            <!-- Left: Shuffle & Level Indicator -->
+            <div class="flex items-center gap-2">
+                <button id="btnShuffle" class="btn-orange px-3 py-2 rounded-xl text-xs md:text-sm font-black flex items-center gap-1 text-white">
+                    🔄 <span class="hidden sm:inline">CHANGE</span>
+                    <span id="shuffleBadge" class="bg-amber-900/80 text-yellow-300 text-xs px-1.5 py-0.5 rounded-md font-bold ml-1">5</span>
+                </button>
+                <div class="bg-emerald-900/90 border border-emerald-500/50 px-2.5 py-1 rounded-xl text-center">
+                    <span class="text-[10px] text-emerald-300 block font-black uppercase leading-none">LEVEL</span>
+                    <span id="levelText" class="text-base md:text-lg font-black text-yellow-300 leading-tight">1</span>
+                </div>
+            </div>
+
+            <!-- Center: Theme Badge & Timer Bar -->
+            <div class="flex-1 max-w-xs mx-1 sm:mx-3 flex flex-col items-center">
+                <div id="themeBadge" class="text-[11px] md:text-xs font-black text-yellow-300 bg-emerald-900/90 px-3 py-0.5 rounded-full border border-emerald-500/40 mb-1 tracking-wide shadow uppercase">
+                    💎 Shiny Jewels
+                </div>
+                <div class="w-full bg-emerald-950 rounded-full h-3.5 p-0.5 border border-emerald-500/60 overflow-hidden shadow-inner">
+                    <div id="timerBar" class="bg-gradient-to-r from-emerald-400 via-yellow-400 to-red-500 h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+                </div>
+            </div>
+
+            <!-- Right: Hint & Settings -->
+            <div class="flex items-center gap-2">
+                <button id="btnHint" class="btn-yellow px-3 py-2 rounded-xl text-xs md:text-sm font-black flex items-center gap-1 text-amber-950 relative">
+                    🔍 <span class="hidden sm:inline">HINT</span>
+                    <span id="hintBadge" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow">5</span>
+                </button>
+                <button id="btnPause" class="btn-green p-2 rounded-xl text-lg flex items-center justify-center w-9 h-9 text-white">
+                    ⚙️
+                </button>
+            </div>
+        </div>
+
+        <!-- Central Board Section -->
+        <div class="relative flex-1 w-full my-2 flex items-center justify-center overflow-hidden">
+            <!-- Canvas Overlay for Drawing Path Connections & Particle Effects -->
+            <canvas id="fxCanvas" class="absolute inset-0 z-30 pointer-events-none w-full h-full"></canvas>
+            
+            <!-- Dynamic Grid Board -->
+            <div id="gridBoard" class="grid gap-1 sm:gap-1.5 p-2 bg-emerald-950/70 backdrop-blur-md border-4 border-emerald-600/80 rounded-2xl shadow-2xl z-10 max-h-full max-w-full overflow-auto">
+                <!-- Tiles dynamically generated -->
+            </div>
+
+            <!-- Popup Floating Text Overlay for Combos -->
+            <div id="comboContainer" class="absolute inset-0 z-40 pointer-events-none flex items-center justify-center"></div>
+        </div>
+
+        <!-- Footer Stats Bar -->
+        <div class="w-full flex justify-between items-center text-xs sm:text-sm font-bold text-emerald-100 bg-emerald-950/60 px-4 py-1.5 rounded-xl border border-emerald-600/40 shadow">
+            <span>Pairs Left: <span id="pairsLeftText" class="text-yellow-300 font-black text-base">0</span></span>
+            <span id="gravityText" class="text-emerald-300 hidden sm:inline-block font-black text-xs uppercase">Shift: Standard</span>
+            <span>Score: <span id="scoreText" class="text-yellow-300 font-black text-base">0</span></span>
+        </div>
+    </div>
+
+    <!-- MODAL: HOW TO PLAY -->
+    <div id="modalHowTo" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-emerald-950 border-4 border-emerald-500 rounded-3xl p-6 max-w-sm w-full shadow-2xl text-center flex flex-col items-center">
+            <h3 class="text-3xl font-black text-yellow-400 mb-2">HOW TO PLAY</h3>
+            <p class="text-xs md:text-sm text-emerald-100 mb-4 leading-relaxed">
+                Match 2 identical tiles connected by a line with <span class="text-yellow-300 font-bold">AT MOST 2 TURNS</span> (up to 3 straight lines). Path can pass through empty cells or around the board edges!
+            </p>
+            <div class="bg-emerald-900/80 p-3 rounded-2xl border border-emerald-600/50 mb-5 text-xs text-left text-emerald-200 space-y-1.5">
+                <div>🎨 <strong>Themes change</strong> per level (Gems, Fruits, Animals, Sweets, Nature).</div>
+                <div>🧊 <strong>Ice Tiles:</strong> Match nearby tiles to unfreeze!</div>
+                <div>🪨 <strong>Rock Blocks:</strong> Indestructible obstacles.</div>
+                <div>⬇️ <strong>Gravity Shifts:</strong> Tiles slide after matches in higher levels!</div>
+            </div>
+            <button id="btnCloseHowTo" class="btn-orange px-8 py-2.5 rounded-full font-black text-white text-base">
+                GOT IT!
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: PAUSE -->
+    <div id="modalPause" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-emerald-950 border-4 border-emerald-500 rounded-3xl p-6 max-w-xs w-full shadow-2xl text-center flex flex-col items-center gap-3">
+            <h3 class="text-2xl font-black text-yellow-400 mb-2">GAME PAUSED</h3>
+            <button id="btnResume" class="btn-green w-full py-3 rounded-2xl font-black text-white text-base">RESUME</button>
+            <button id="btnRestart" class="btn-orange w-full py-3 rounded-2xl font-black text-white text-base">RESTART</button>
+            <button id="btnQuit" class="bg-red-600 hover:bg-red-700 text-white w-full py-3 rounded-2xl font-black text-base shadow-lg">MAIN MENU</button>
+        </div>
+    </div>
+
+    <!-- MODAL: LEVEL RESULT -->
+    <div id="modalResult" class="hidden fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-emerald-950 border-4 border-emerald-500 rounded-3xl p-6 max-w-xs w-full shadow-2xl text-center flex flex-col items-center">
+            <div id="resultIcon" class="text-6xl mb-1">🏆</div>
+            <h3 id="resultTitle" class="text-3xl font-black text-yellow-400 mb-1">VICTORY!</h3>
+            <p id="resultSubtitle" class="text-xs text-emerald-200 mb-4">Level Completed!</p>
+            
+            <div class="bg-emerald-900/80 w-full p-3 rounded-2xl border border-emerald-600/50 mb-5 flex justify-around">
+                <div>
+                    <span class="block text-[10px] text-emerald-300 font-bold uppercase">SCORE</span>
+                    <span id="finalScore" class="text-lg font-black text-yellow-300">0</span>
+                </div>
+                <div>
+                    <span class="block text-[10px] text-emerald-300 font-bold uppercase">TIME BONUS</span>
+                    <span id="finalTime" class="text-lg font-black text-emerald-300">+0</span>
+                </div>
+            </div>
+
+            <div class="flex gap-2 w-full">
+                <button id="btnResultMenu" class="btn-orange flex-1 py-2.5 rounded-2xl font-black text-white">MENU</button>
+                <button id="btnResultNext" class="btn-green flex-1 py-2.5 rounded-2xl font-black text-white">NEXT LEVEL</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Web Audio API Synthesizer for rich audio effects */
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            playTap() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(450, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime + 0.06);
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.06);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.06);
+            }
+
+            playMatch() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+                    gain.gain.setValueAtTime(0.18, now + idx * 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.04 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.04);
+                    osc.stop(now + idx * 0.04 + 0.2);
+                });
+            }
+
+            playFail() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(130, now + 0.18);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.18);
+            }
+
+            playWin() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                [440, 554.37, 659.25, 880, 659.25, 880].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.25, now + i * 0.1);
+                    gain.gain.linearRampToValueAtTime(0.01, now + i * 0.1 + 0.18);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.18);
+                });
+            }
+
+            playFreeze() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, now);
+                osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.15);
+            }
+        }
+
+        const audio = new SoundFX();
+
+        /* THEMATIC TILE DEFINITIONS PER LEVEL GROUPS */
+        const TILE_THEMES = [
+            // Level 1-3: Shiny Jewels
+            {
+                name: "💎 Shiny Jewels",
+                items: [
+                    { id: "j1", symbol: "💎", name: "Diamond" },
+                    { id: "j2", symbol: "🔴", name: "Ruby" },
+                    { id: "j3", symbol: "🟢", name: "Emerald" },
+                    { id: "j4", symbol: "🟣", name: "Amethyst" },
+                    { id: "j5", symbol: "🟡", name: "Topaz" },
+                    { id: "j6", symbol: "🔵", name: "Sapphire" },
+                    { id: "j7", symbol: "⭐", name: "Star Gem" },
+                    { id: "j8", symbol: "💖", name: "Heart Gem" }
+                ]
+            },
+            // Level 4-6: Delicious Fruits
+            {
+                name: "🍎 Delicious Fruits",
+                items: [
+                    { id: "f1", symbol: "🍎", name: "Apple" },
+                    { id: "f2", symbol: "🍓", name: "Strawberry" },
+                    { id: "f3", symbol: "🍊", name: "Orange" },
+                    { id: "f4", symbol: "🍉", name: "Watermelon" },
+                    { id: "f5", symbol: "🍌", name: "Banana" },
+                    { id: "f6", symbol: "🍇", name: "Grapes" },
+                    { id: "f7", symbol: "🍍", name: "Pineapple" },
+                    { id: "f8", symbol: "🍒", name: "Cherries" }
+                ]
+            },
+            // Level 7-9: Cute Animals
+            {
+                name: "🐼 Cute Animals",
+                items: [
+                    { id: "a1", symbol: "🐼", name: "Panda" },
+                    { id: "a2", symbol: "🐶", name: "Dog" },
+                    { id: "a3", symbol: "🐱", name: "Cat" },
+                    { id: "a4", symbol: "🐰", name: "Bunny" },
+                    { id: "a5", symbol: "🦊", name: "Fox" },
+                    { id: "a6", symbol: "🦁", name: "Lion" },
+                    { id: "a7", symbol: "🐸", name: "Frog" },
+                    { id: "a8", symbol: "🐯", name: "Tiger" }
+                ]
+            },
+            // Level 10-12: Yummy Sweets
+            {
+                name: "🍰 Yummy Sweets",
+                items: [
+                    { id: "s1", symbol: "🍰", name: "Cake" },
+                    { id: "s2", symbol: "🍩", name: "Donut" },
+                    { id: "s3", symbol: "🍦", name: "Ice Cream" },
+                    { id: "s4", symbol: "🍭", name: "Lollipop" },
+                    { id: "s5", symbol: "🧁", name: "Cupcake" },
+                    { id: "s6", symbol: "🍫", name: "Chocolate" },
+                    { id: "s7", symbol: "🍬", name: "Candy" },
+                    { id: "s8", symbol: "🍮", name: "Pudding" }
+                ]
+            },
+            // Level 13-15: Tropical Nature
+            {
+                name: "🌴 Tropical Nature",
+                items: [
+                    { id: "n1", symbol: "🌴", name: "Palm" },
+                    { id: "n2", symbol: "🌺", name: "Flower" },
+                    { id: "n3", symbol: "🍄", name: "Mushroom" },
+                    { id: "n4", symbol: "🌻", name: "Sunflower" },
+                    { id: "n5", symbol: "🍀", name: "Clover" },
+                    { id: "n6", symbol: "🌵", name: "Cactus" },
+                    { id: "n7", symbol: "Maple Leaf", symbol: "🍁", name: "Maple" },
+                    { id: "n8", symbol: "🌷", name: "Tulip" }
+                ]
+            }
+        ];
+
+        /* LEVEL CONFIGURATIONS WITH SHAPE PATTERNS & GRAVITY SHIFTS */
+        const LEVEL_CONFIGS = [
+            { level: 1, rows: 6, cols: 8, themeIdx: 0, time: 120, gravity: 'none', iceRatio: 0, rockRatio: 0, shape: 'full' },
+            { level: 2, rows: 6, cols: 10, themeIdx: 0, time: 130, gravity: 'down', iceRatio: 0, rockRatio: 0, shape: 'full' },
+            { level: 3, rows: 6, cols: 10, themeIdx: 0, time: 140, gravity: 'none', iceRatio: 0.1, rockRatio: 0, shape: 'donut' },
+            { level: 4, rows: 6, cols: 10, themeIdx: 1, time: 130, gravity: 'left', iceRatio: 0, rockRatio: 0, shape: 'full' },
+            { level: 5, rows: 8, cols: 10, themeIdx: 1, time: 150, gravity: 'down', iceRatio: 0.12, rockRatio: 0.04, shape: 'full' },
+            { level: 6, rows: 8, cols: 10, themeIdx: 1, time: 150, gravity: 'up', iceRatio: 0.15, rockRatio: 0.05, shape: 'cross' },
+            { level: 7, rows: 8, cols: 10, themeIdx: 2, time: 160, gravity: 'right', iceRatio: 0.1, rockRatio: 0, shape: 'full' },
+            { level: 8, rows: 8, cols: 12, themeIdx: 2, time: 170, gravity: 'down', iceRatio: 0.15, rockRatio: 0.06, shape: 'frame' },
+            { level: 9, rows: 8, cols: 12, themeIdx: 2, time: 170, gravity: 'split_v', iceRatio: 0.15, rockRatio: 0.05, shape: 'full' },
+            { level: 10, rows: 8, cols: 12, themeIdx: 3, time: 180, gravity: 'left', iceRatio: 0.15, rockRatio: 0.05, shape: 'full' },
+            { level: 11, rows: 8, cols: 12, themeIdx: 3, time: 180, gravity: 'down', iceRatio: 0.2, rockRatio: 0.08, shape: 'scattered' },
+            { level: 12, rows: 8, cols: 12, themeIdx: 3, time: 180, gravity: 'up', iceRatio: 0.2, rockRatio: 0.08, shape: 'donut' },
+            { level: 13, rows: 8, cols: 12, themeIdx: 4, time: 190, gravity: 'right', iceRatio: 0.2, rockRatio: 0.08, shape: 'full' },
+            { level: 14, rows: 8, cols: 12, themeIdx: 4, time: 190, gravity: 'split_v', iceRatio: 0.22, rockRatio: 0.08, shape: 'cross' },
+            { level: 15, rows: 8, cols: 12, themeIdx: 4, time: 200, gravity: 'down', iceRatio: 0.25, rockRatio: 0.10, shape: 'scattered' }
+        ];
+
+        class OnetGame {
+            constructor() {
+                this.levelIndex = 0;
+                this.grid = []; // 2D array matrix
+                this.rows = 0;
+                this.cols = 0;
+                this.selectedTile = null;
+                this.hintsLeft = 5;
+                this.shufflesLeft = 5;
+                this.score = 0;
+                this.comboCount = 0;
+                this.lastMatchTime = 0;
+                this.timer = null;
+                this.timeLeft = 0;
+                this.totalTime = 0;
+                this.isPaused = false;
+                this.isAnimating = false;
+                this.particles = [];
+
+                this.domBoard = document.getElementById('gridBoard');
+                this.canvas = document.getElementById('fxCanvas');
+                this.ctx = this.canvas.getContext('2d');
+
+                this.initEvents();
+                this.renderLevelGrid();
+                this.resizeCanvas();
+                window.addEventListener('resize', () => this.resizeCanvas());
+
+                // Particle Loop
+                requestAnimationFrame(() => this.fxLoop());
+            }
+
+            resizeCanvas() {
+                const rect = this.domBoard.getBoundingClientRect();
+                this.canvas.width = rect.width;
+                this.canvas.height = rect.height;
+            }
+
+            renderLevelGrid() {
+                const container = document.getElementById('levelGrid');
+                container.innerHTML = '';
+                LEVEL_CONFIGS.forEach((cfg, idx) => {
+                    const btn = document.createElement('button');
+                    const theme = TILE_THEMES[cfg.themeIdx];
+                    btn.className = `btn-green py-2.5 rounded-2xl font-black text-sm flex flex-col items-center justify-center text-white relative shadow`;
+                    btn.innerHTML = `
+                        <span class="text-xs text-yellow-200">${theme.items[0].symbol}</span>
+                        <span>LVL ${cfg.level}</span>
+                    `;
+                    btn.onclick = () => {
+                        audio.playTap();
+                        this.startLevel(idx);
+                    };
+                    container.appendChild(btn);
+                });
+            }
+
+            startLevel(idx) {
+                this.levelIndex = idx;
+                const cfg = LEVEL_CONFIGS[idx];
+                const theme = TILE_THEMES[cfg.themeIdx];
+
+                this.rows = cfg.rows + 2; // +2 for edge path clearance
+                this.cols = cfg.cols + 2;
+                this.hintsLeft = 5;
+                this.shufflesLeft = 5;
+                this.score = 0;
+                this.comboCount = 0;
+                this.timeLeft = cfg.time;
+                this.totalTime = cfg.time;
+                this.selectedTile = null;
+                this.isPaused = false;
+
+                document.getElementById('levelText').textContent = cfg.level;
+                document.getElementById('themeBadge').textContent = theme.name;
+                document.getElementById('hintBadge').textContent = this.hintsLeft;
+                document.getElementById('shuffleBadge').textContent = this.shufflesLeft;
+                document.getElementById('scoreText').textContent = this.score;
+
+                // Format Gravity Display Text
+                const gravTextMap = {
+                    'none': 'Shift: Standard',
+                    'down': 'Shift: Down ⬇️',
+                    'up': 'Shift: Up ⬆️',
+                    'left': 'Shift: Left ⬅️',
+                    'right': 'Shift: Right ➡️',
+                    'split_v': 'Shift: Split ↕️'
+                };
+                document.getElementById('gravityText').textContent = gravTextMap[cfg.gravity];
+
+                // Build Tile Matrix
+                this.generateBoardMatrix(cfg, theme);
+
+                // UI Screen Toggle
+                document.getElementById('mainMenu').classList.add('hidden');
+                document.getElementById('gameScreen').classList.remove('hidden');
+                document.getElementById('gameScreen').classList.add('flex');
+
+                this.renderBoard();
+                this.startTimer();
+                setTimeout(() => this.resizeCanvas(), 100);
+            }
+
+            generateBoardMatrix(cfg, theme) {
+                const innerRows = cfg.rows;
+                const innerCols = cfg.cols;
+                let activeCells = [];
+
+                // Define shape masks
+                for (let r = 1; r <= innerRows; r++) {
+                    for (let c = 1; c <= innerCols; c++) {
+                        let include = true;
+                        if (cfg.shape === 'donut') {
+                            if (r >= Math.floor(innerRows*0.35) && r <= Math.floor(innerRows*0.65) &&
+                                c >= Math.floor(innerCols*0.35) && c <= Math.floor(innerCols*0.65)) {
+                                include = false;
+                            }
+                        } else if (cfg.shape === 'cross') {
+                            const isCenterR = r >= Math.floor(innerRows*0.4) && r <= Math.floor(innerRows*0.6);
+                            const isCenterC = c >= Math.floor(innerCols*0.4) && c <= Math.floor(innerCols*0.6);
+                            if (!isCenterR && !isCenterC) include = false;
+                        } else if (cfg.shape === 'frame') {
+                            const isEdge = r === 1 || r === innerRows || c === 1 || c === innerCols;
+                            if (!isEdge) include = false;
+                        } else if (cfg.shape === 'scattered') {
+                            if ((r + c) % 3 === 0) include = false;
+                        }
+
+                        if (include) {
+                            activeCells.push({ r, c });
+                        }
+                    }
+                }
+
+                // Ensure active cells length is even
+                if (activeCells.length % 2 !== 0) {
+                    activeCells.pop();
+                }
+
+                // Calculate obstacles
+                const totalActive = activeCells.length;
+                const rockCount = Math.floor(totalActive * cfg.rockRatio);
+                let tileCount = totalActive - rockCount;
+                if (tileCount % 2 !== 0) tileCount--;
+
+                // Shuffle active positions
+                this.shuffleArray(activeCells);
+
+                // Initialize empty matrix
+                this.grid = Array.from({ length: this.rows }, () => Array(this.cols).fill(null));
+
+                // Place rock obstacles
+                for (let i = 0; i < rockCount; i++) {
+                    const pos = activeCells.pop();
+                    this.grid[pos.r][pos.c] = { type: 'rock', symbol: '🪨', id: 'rock' };
+                }
+
+                // Place tile pairs
+                const availableThemeItems = theme.items;
+                let tilePairsPool = [];
+                for (let i = 0; i < tileCount / 2; i++) {
+                    const item = availableThemeItems[i % availableThemeItems.length];
+                    tilePairsPool.push(item, item);
+                }
+                this.shuffleArray(tilePairsPool);
+
+                // Distribute tiles with potential frozen status
+                const iceCount = Math.floor(tileCount * cfg.iceRatio);
+                tilePairsPool.forEach((item, idx) => {
+                    const pos = activeCells.pop();
+                    const isFrozen = idx < iceCount;
+                    this.grid[pos.r][pos.c] = {
+                        type: 'tile',
+                        id: item.id,
+                        symbol: item.symbol,
+                        name: item.name,
+                        frozen: isFrozen
+                    };
+                });
+
+                this.ensurePlayableBoard();
+            }
+
+            shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+            }
+
+            renderBoard() {
+                this.domBoard.innerHTML = '';
+                this.domBoard.style.gridTemplateColumns = `repeat(${this.cols}, minmax(0, 1fr))`;
+
+                let remainingPairs = 0;
+
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cell = this.grid[r][c];
+                        const tileDiv = document.createElement('div');
+                        tileDiv.dataset.row = r;
+                        tileDiv.dataset.col = c;
+
+                        if (cell) {
+                            if (cell.type === 'tile') {
+                                remainingPairs++;
+                                tileDiv.className = `tile-card w-8 h-8 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-lg sm:text-2xl md:text-3xl cursor-pointer select-none transition-all`;
+                                tileDiv.innerHTML = cell.symbol;
+
+                                if (cell.frozen) {
+                                    tileDiv.classList.add('frozen');
+                                    tileDiv.innerHTML += `<span class="absolute text-[10px] top-0 right-0 p-0.5">❄️</span>`;
+                                }
+
+                                if (this.selectedTile && this.selectedTile.r === r && this.selectedTile.c === c) {
+                                    tileDiv.classList.add('selected');
+                                }
+
+                                tileDiv.onclick = () => this.handleTileClick(r, c);
+                            } else if (cell.type === 'rock') {
+                                tileDiv.className = `tile-card rock w-8 h-8 sm:w-11 sm:h-11 md:w-14 md:h-14 rounded-xl flex items-center justify-center text-lg sm:text-2xl md:text-3xl opacity-90 cursor-not-allowed`;
+                                tileDiv.innerHTML = cell.symbol;
+                            }
+                        } else {
+                            tileDiv.className = `w-8 h-8 sm:w-11 sm:h-11 md:w-14 md:h-14 pointer-events-none opacity-0`;
+                        }
+
+                        this.domBoard.appendChild(tileDiv);
+                    }
+                }
+
+                document.getElementById('pairsLeftText').textContent = Math.floor(remainingPairs / 2);
+
+                if (remainingPairs === 0) {
+                    this.handleWin();
+                }
+            }
+
+            handleTileClick(r, c) {
+                if (this.isPaused || this.isAnimating) return;
+                
+                const target = this.grid[r][c];
+                if (!target || target.type !== 'tile') return;
+
+                if (target.frozen) {
+                    audio.playFreeze();
+                    return;
+                }
+
+                audio.playTap();
+
+                // Unselect if clicking the same tile
+                if (this.selectedTile && this.selectedTile.r === r && this.selectedTile.c === c) {
+                    this.selectedTile = null;
+                    this.renderBoard();
+                    return;
+                }
+
+                // First selection
+                if (!this.selectedTile) {
+                    this.selectedTile = { r, c };
+                    this.renderBoard();
+                    return;
+                }
+
+                // Second selection check
+                const prev = this.selectedTile;
+                const tileA = this.grid[prev.r][prev.c];
+                const tileB = target;
+
+                if (tileA.id === tileB.id) {
+                    const path = this.findPath(prev.r, prev.c, r, c);
+                    if (path) {
+                        this.isAnimating = true;
+                        audio.playMatch();
+                        
+                        // Laser path draw & Particle FX
+                        this.drawPathAnimation(path);
+                        this.spawnMatchParticles(path[0]);
+                        this.spawnMatchParticles(path[path.length - 1]);
+
+                        // Handle Combo Multiplier
+                        const now = Date.now();
+                        if (now - this.lastMatchTime < 3000) {
+                            this.comboCount++;
+                        } else {
+                            this.comboCount = 1;
+                        }
+                        this.lastMatchTime = now;
+
+                        if (this.comboCount > 1) {
+                            this.showComboPopup(`COMBO x${this.comboCount}!`);
+                        }
+
+                        // Remove tiles
+                        this.grid[prev.r][prev.c] = null;
+                        this.grid[r][c] = null;
+                        this.selectedTile = null;
+
+                        // Unfreeze adjacent tiles
+                        this.unfreezeAdjacent(prev.r, prev.c);
+                        this.unfreezeAdjacent(r, c);
+
+                        this.score += 100 * this.comboCount;
+                        document.getElementById('scoreText').textContent = this.score;
+
+                        setTimeout(() => {
+                            this.clearCanvas();
+                            this.applyGravity(LEVEL_CONFIGS[this.levelIndex].gravity);
+                            this.renderBoard();
+                            this.isAnimating = false;
+
+                            // Auto shuffle if no available moves remain
+                            if (this.getRemainingTileCount() > 0 && !this.findAnyValidPair()) {
+                                this.autoShuffle();
+                            }
+                        }, 280);
+
+                        return;
+                    }
+                }
+
+                // Failed match connection
+                audio.playFail();
+                this.selectedTile = { r, c };
+                this.renderBoard();
+            }
+
+            unfreezeAdjacent(r, c) {
+                const neighbors = [
+                    { r: r - 1, c }, { r: r + 1, c },
+                    { r, c: c - 1 }, { r, c: c + 1 }
+                ];
+                neighbors.forEach(n => {
+                    if (n.r >= 0 && n.r < this.rows && n.c >= 0 && n.c < this.cols) {
+                        if (this.grid[n.r][n.c] && this.grid[n.r][n.c].frozen) {
+                            this.grid[n.r][n.c].frozen = false;
+                        }
+                    }
+                });
+            }
+
+            /* 0, 1, or 2 Turn Pathfinding Engine */
+            findPath(r1, c1, r2, c2) {
+                // 1. Straight Line (0 turns)
+                if (this.checkLine(r1, c1, r2, c2)) {
+                    return [{ r: r1, c: c1 }, { r: r2, c: c2 }];
+                }
+
+                // 2. L-Shape (1 turn)
+                if (this.grid[r1][c2] === null && this.checkLine(r1, c1, r1, c2) && this.checkLine(r1, c2, r2, c2)) {
+                    return [{ r: r1, c: c1 }, { r: r1, c: c2 }, { r: r2, c: c2 }];
+                }
+                if (this.grid[r2][c1] === null && this.checkLine(r1, c1, r2, c1) && this.checkLine(r2, c1, r2, c2)) {
+                    return [{ r: r1, c: c1 }, { r: r2, c: c1 }, { r: r2, c: c2 }];
+                }
+
+                // 3. Z / U Shape (2 turns)
+                // Horizontal scan
+                for (let c = 0; c < this.cols; c++) {
+                    if (c === c1) continue;
+                    if (this.grid[r1][c] === null && this.checkLine(r1, c1, r1, c) &&
+                        this.grid[r2][c] === null && this.checkLine(r2, c2, r2, c) &&
+                        this.checkLine(r1, c, r2, c)) {
+                        return [{ r: r1, c: c1 }, { r: r1, c: c }, { r: r2, c: c }, { r: r2, c: c2 }];
+                    }
+                }
+
+                // Vertical scan
+                for (let r = 0; r < this.rows; r++) {
+                    if (r === r1) continue;
+                    if (this.grid[r][c1] === null && this.checkLine(r1, c1, r, c1) &&
+                        this.grid[r][c2] === null && this.checkLine(r2, c2, r, c2) &&
+                        this.checkLine(r, c1, r, c2)) {
+                        return [{ r: r1, c: c1 }, { r: r, c: c1 }, { r: r, c: c2 }, { r: r2, c: c2 }];
+                    }
+                }
+
+                return null;
+            }
+
+            checkLine(r1, c1, r2, c2) {
+                if (r1 !== r2 && c1 !== c2) return false;
+
+                if (r1 === r2) {
+                    const minC = Math.min(c1, c2);
+                    const maxC = Math.max(c1, c2);
+                    for (let c = minC + 1; c < maxC; c++) {
+                        if (this.grid[r1][c] !== null) return false;
+                    }
+                } else {
+                    const minR = Math.min(r1, r2);
+                    const maxR = Math.max(r1, r2);
+                    for (let r = minR + 1; r < maxR; r++) {
+                        if (this.grid[r][c1] !== null) return false;
+                    }
+                }
+                return true;
+            }
+
+            applyGravity(type) {
+                if (type === 'none') return;
+
+                if (type === 'down') {
+                    for (let c = 1; c < this.cols - 1; c++) {
+                        for (let r = this.rows - 2; r >= 1; r--) {
+                            if (this.grid[r][c] === null) {
+                                for (let k = r - 1; k >= 1; k--) {
+                                    if (this.grid[k][c] && this.grid[k][c].type !== 'rock') {
+                                        this.grid[r][c] = this.grid[k][c];
+                                        this.grid[k][c] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (type === 'up') {
+                    for (let c = 1; c < this.cols - 1; c++) {
+                        for (let r = 1; r < this.rows - 1; r++) {
+                            if (this.grid[r][c] === null) {
+                                for (let k = r + 1; k < this.rows - 1; k++) {
+                                    if (this.grid[k][c] && this.grid[k][c].type !== 'rock') {
+                                        this.grid[r][c] = this.grid[k][c];
+                                        this.grid[k][c] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (type === 'left') {
+                    for (let r = 1; r < this.rows - 1; r++) {
+                        for (let c = 1; c < this.cols - 1; c++) {
+                            if (this.grid[r][c] === null) {
+                                for (let k = c + 1; k < this.cols - 1; k++) {
+                                    if (this.grid[r][k] && this.grid[r][k].type !== 'rock') {
+                                        this.grid[r][c] = this.grid[r][k];
+                                        this.grid[r][k] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (type === 'right') {
+                    for (let r = 1; r < this.rows - 1; r++) {
+                        for (let c = this.cols - 2; c >= 1; c--) {
+                            if (this.grid[r][c] === null) {
+                                for (let k = c - 1; k >= 1; k--) {
+                                    if (this.grid[r][k] && this.grid[r][k].type !== 'rock') {
+                                        this.grid[r][c] = this.grid[r][k];
+                                        this.grid[r][k] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (type === 'split_v') {
+                    const mid = Math.floor(this.rows / 2);
+                    // Top half shifts UP
+                    for (let c = 1; c < this.cols - 1; c++) {
+                        for (let r = 1; r < mid; r++) {
+                            if (this.grid[r][c] === null) {
+                                for (let k = r + 1; k <= mid; k++) {
+                                    if (this.grid[k][c] && this.grid[k][c].type !== 'rock') {
+                                        this.grid[r][c] = this.grid[k][c];
+                                        this.grid[k][c] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // Bottom half shifts DOWN
+                    for (let c = 1; c < this.cols - 1; c++) {
+                        for (let r = this.rows - 2; r >= mid; r--) {
+                            if (this.grid[r][c] === null) {
+                                for (let k = r - 1; k >= mid; k--) {
+                                    if (this.grid[k][c] && this.grid[k][c].type !== 'rock') {
+                                        this.grid[r][c] = this.grid[k][c];
+                                        this.grid[k][c] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            drawPathAnimation(path) {
+                this.resizeCanvas();
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = '#facc15';
+                this.ctx.lineWidth = 6;
+                this.ctx.lineCap = 'round';
+                this.ctx.lineJoin = 'round';
+                this.ctx.shadowColor = '#eab308';
+                this.ctx.shadowBlur = 15;
+
+                path.forEach((pt, idx) => {
+                    const elem = document.querySelector(`[data-row='${pt.r}'][data-col='${pt.c}']`);
+                    if (elem) {
+                        const boardRect = this.domBoard.getBoundingClientRect();
+                        const rect = elem.getBoundingClientRect();
+                        const x = rect.left - boardRect.left + rect.width / 2;
+                        const y = rect.top - boardRect.top + rect.height / 2;
+
+                        if (idx === 0) this.ctx.moveTo(x, y);
+                        else this.ctx.lineTo(x, y);
+                    }
+                });
+
+                this.ctx.stroke();
+            }
+
+            spawnMatchParticles(pt) {
+                const elem = document.querySelector(`[data-row='${pt.r}'][data-col='${pt.c}']`);
+                if (!elem) return;
+                const boardRect = this.domBoard.getBoundingClientRect();
+                const rect = elem.getBoundingClientRect();
+                const centerX = rect.left - boardRect.left + rect.width / 2;
+                const centerY = rect.top - boardRect.top + rect.height / 2;
+
+                for (let i = 0; i < 16; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = 2 + Math.random() * 4;
+                    this.particles.push({
+                        x: centerX,
+                        y: centerY,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: 1.0,
+                        color: ['#facc15', '#f59e0b', '#38bdf8', '#4ade80'][Math.floor(Math.random() * 4)]
+                    });
+                }
+            }
+
+            fxLoop() {
+                if (this.particles.length > 0) {
+                    this.ctx.save();
+                    this.particles.forEach((p, idx) => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.life -= 0.04;
+
+                        this.ctx.beginPath();
+                        this.ctx.arc(p.x, p.y, 3 * p.life, 0, Math.PI * 2);
+                        this.ctx.fillStyle = p.color;
+                        this.ctx.globalAlpha = p.life;
+                        this.ctx.fill();
+                    });
+                    this.ctx.restore();
+
+                    this.particles = this.particles.filter(p => p.life > 0);
+                }
+                requestAnimationFrame(() => this.fxLoop());
+            }
+
+            clearCanvas() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
+
+            showComboPopup(text) {
+                const container = document.getElementById('comboContainer');
+                const div = document.createElement('div');
+                div.className = 'combo-text font-black text-3xl md:text-5xl text-yellow-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)]';
+                div.textContent = text;
+                container.appendChild(div);
+                setTimeout(() => div.remove(), 800);
+            }
+
+            findAnyValidPair() {
+                const tiles = [];
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cell = this.grid[r][c];
+                        if (cell && cell.type === 'tile' && !cell.frozen) {
+                            tiles.push({ r, c, id: cell.id });
+                        }
+                    }
+                }
+
+                for (let i = 0; i < tiles.length; i++) {
+                    for (let j = i + 1; j < tiles.length; j++) {
+                        if (tiles[i].id === tiles[j].id) {
+                            const path = this.findPath(tiles[i].r, tiles[i].c, tiles[j].r, tiles[j].c);
+                            if (path) return [tiles[i], tiles[j]];
+                        }
+                    }
+                }
+                return null;
+            }
+
+            useHint() {
+                if (this.hintsLeft <= 0 || this.isPaused) return;
+                const pair = this.findAnyValidPair();
+                if (pair) {
+                    this.hintsLeft--;
+                    document.getElementById('hintBadge').textContent = this.hintsLeft;
+                    
+                    const elemA = document.querySelector(`[data-row='${pair[0].r}'][data-col='${pair[0].c}']`);
+                    const elemB = document.querySelector(`[data-row='${pair[1].r}'][data-col='${pair[1].c}']`);
+
+                    if (elemA && elemB) {
+                        elemA.classList.add('hint-glow');
+                        elemB.classList.add('hint-glow');
+                        setTimeout(() => {
+                            elemA.classList.remove('hint-glow');
+                            elemB.classList.remove('hint-glow');
+                        }, 1800);
+                    }
+                }
+            }
+
+            autoShuffle() {
+                if (this.isPaused) return;
+                const tileList = [];
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        const cell = this.grid[r][c];
+                        if (cell && cell.type === 'tile') {
+                            tileList.push(cell);
+                        }
+                    }
+                }
+
+                this.shuffleArray(tileList);
+
+                let idx = 0;
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        if (this.grid[r][c] && this.grid[r][c].type === 'tile') {
+                            this.grid[r][c] = tileList[idx++];
+                        }
+                    }
+                }
+
+                this.ensurePlayableBoard();
+                this.renderBoard();
+            }
+
+            ensurePlayableBoard() {
+                if (this.getRemainingTileCount() === 0) return;
+                let attempts = 0;
+                while (!this.findAnyValidPair() && attempts < 40) {
+                    this.autoShuffle();
+                    attempts++;
+                }
+            }
+
+            getRemainingTileCount() {
+                let count = 0;
+                for (let r = 0; r < this.rows; r++) {
+                    for (let c = 0; c < this.cols; c++) {
+                        if (this.grid[r][c] && this.grid[r][c].type === 'tile') count++;
+                    }
+                }
+                return count;
+            }
+
+            startTimer() {
+                clearInterval(this.timer);
+                this.timer = setInterval(() => {
+                    if (this.isPaused) return;
+                    this.timeLeft--;
+
+                    const mins = Math.floor(this.timeLeft / 60).toString().padStart(2, '0');
+                    const secs = (this.timeLeft % 60).toString().padStart(2, '0');
+
+                    const pct = (this.timeLeft / this.totalTime) * 100;
+                    document.getElementById('timerBar').style.width = `${pct}%`;
+
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.handleGameOver();
+                    }
+                }, 1000);
+            }
+
+            handleWin() {
+                clearInterval(this.timer);
+                audio.playWin();
+
+                const bonus = this.timeLeft * 10;
+                this.score += bonus;
+
+                document.getElementById('resultIcon').textContent = '🏆';
+                document.getElementById('resultTitle').textContent = 'VICTORY!';
+                document.getElementById('resultSubtitle').textContent = `Level ${LEVEL_CONFIGS[this.levelIndex].level} Cleared!`;
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalTime').textContent = `+${bonus}`;
+
+                const btnNext = document.getElementById('btnResultNext');
+                btnNext.style.display = (this.levelIndex < LEVEL_CONFIGS.length - 1) ? 'block' : 'none';
+
+                document.getElementById('modalResult').classList.remove('hidden');
+            }
+
+            handleGameOver() {
+                audio.playFail();
+                document.getElementById('resultIcon').textContent = '⌛';
+                document.getElementById('resultTitle').textContent = 'TIME OUT!';
+                document.getElementById('resultSubtitle').textContent = 'Try again!';
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalTime').textContent = '+0';
+                document.getElementById('btnResultNext').style.display = 'none';
+
+                document.getElementById('modalResult').classList.remove('hidden');
+            }
+
+            initEvents() {
+                document.getElementById('btnHowToPlay').onclick = () => {
+                    audio.playTap();
+                    document.getElementById('modalHowTo').classList.remove('hidden');
+                };
+                document.getElementById('btnCloseHowTo').onclick = () => {
+                    audio.playTap();
+                    document.getElementById('modalHowTo').classList.add('hidden');
+                };
+
+                document.getElementById('btnSoundToggle').onclick = (e) => {
+                    audio.enabled = !audio.enabled;
+                    e.target.textContent = audio.enabled ? '🔊' : '🔇';
+                };
+
+                document.getElementById('btnHint').onclick = () => this.useHint();
+                document.getElementById('btnShuffle').onclick = () => {
+                    if (this.shufflesLeft > 0) {
+                        this.shufflesLeft--;
+                        document.getElementById('shuffleBadge').textContent = this.shufflesLeft;
+                        audio.playTap();
+                        this.autoShuffle();
+                    }
+                };
+
+                document.getElementById('btnPause').onclick = () => {
+                    audio.playTap();
+                    this.isPaused = true;
+                    document.getElementById('modalPause').classList.remove('hidden');
+                };
+                document.getElementById('btnResume').onclick = () => {
+                    audio.playTap();
+                    this.isPaused = false;
+                    document.getElementById('modalPause').classList.add('hidden');
+                };
+                document.getElementById('btnRestart').onclick = () => {
+                    audio.playTap();
+                    document.getElementById('modalPause').classList.add('hidden');
+                    this.startLevel(this.levelIndex);
+                };
+                document.getElementById('btnQuit').onclick = () => {
+                    audio.playTap();
+                    clearInterval(this.timer);
+                    document.getElementById('modalPause').classList.add('hidden');
+                    document.getElementById('gameScreen').classList.add('hidden');
+                    document.getElementById('mainMenu').classList.remove('hidden');
+                };
+
+                document.getElementById('btnResultMenu').onclick = () => {
+                    audio.playTap();
+                    document.getElementById('modalResult').classList.add('hidden');
+                    document.getElementById('gameScreen').classList.add('hidden');
+                    document.getElementById('mainMenu').classList.remove('hidden');
+                };
+                document.getElementById('btnResultNext').onclick = () => {
+                    audio.playTap();
+                    document.getElementById('modalResult').classList.add('hidden');
+                    this.startLevel(this.levelIndex + 1);
+                };
+            }
+        }
+
+        window.onload = () => {
+            window.game = new OnetGame();
+        };
+    </script>
+</body>
+</html>
